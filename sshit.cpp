@@ -18,7 +18,7 @@
 #include <fstream>
 using namespace std;
 
-#define PORT_NUMBER "9876"
+#define PORT_NUMBER "12346"
 #define MAX_BUFFER_SIZE 1024
 
 int main( int argc, char **argv )
@@ -92,7 +92,7 @@ int main( int argc, char **argv )
 	}
 
 	// Send the filename to the remote terminal.
-	if( send( sockfd, argv[2], strlen( argv[2] ) + 1, 0 ) == -1 )
+	if( send( sockfd, argv[3], strlen( argv[3] ) + 1, 0 ) == -1 )
 	{
 		cerr << "Error sending filename." << endl;
 		exit( EXIT_FAILURE );
