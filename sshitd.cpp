@@ -46,14 +46,25 @@ int main()
 	// Child process becomes the daemon
 	umask( 0 );
 
+	ofstream logfile( "sshitd.log", ios::out );
+	if( logfile.fail() )
+	{
+		cerr << "Couldn't set up log file" << endl;
+		exit( EXIT_FAILURE );
+	}
+
 	pid_t sid = setsid();
 	if( sid < 0 )
 	{
+		logfile << "setsid() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
 	if( chdir( "/" ) < 0 )
 	{
+		logfile << "chdir() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
@@ -73,6 +84,8 @@ int main()
 
 	if( getaddrinfo( NULL, PORT_NUMBER, &hints, &servinfo ) != 0 )
 	{
+		logfile << "getaddrinfo() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
@@ -103,6 +116,8 @@ int main()
 
 	if( p == NULL )
 	{
+		logfile << "setsockopt() or bind() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
@@ -110,6 +125,8 @@ int main()
 
 	if( listen( handshake_socket, 10 ) == -1 )
 	{
+		logfile << "listen() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
@@ -119,6 +136,8 @@ int main()
 	sa.sa_flags = SA_RESTART;
 	if( sigaction( SIGCHLD, &sa, NULL ) == -1 )
 	{
+		logfile << "sigaction() failure." << endl;
+		logfile.close();
 		exit( EXIT_FAILURE );
 	}
 
@@ -140,6 +159,8 @@ int main()
 			// Get the file name.
 			if( recv( connection_socket, buffer, MAX_BUFFER_SIZE, 0 ) == -1 )
 			{
+				logfile << "recv() failure: filename." << endl;
+				logfile.close();
 				exit( EXIT_FAILURE );
 			}
 			string filename = buffer;
@@ -147,6 +168,8 @@ int main()
 			// Get type of file (text or binary).
 			if( recv( connection_socket, buffer, MAX_BUFFER_SIZE, 0 ) == -1 )
 			{
+				logfile << "recv() failure: file type." << endl;
+				logfile.close();
 				exit( EXIT_FAILURE );
 			}
 
@@ -157,6 +180,8 @@ int main()
 				ofile.open( filename.c_str(), ios::out );
 				if( ofile.fail() )
 				{
+					logfile << "Error opening file \'" << filename << "\'." << endl;
+					logfile.close();
 					exit( EXIT_FAILURE );
 				}
 				while( ( size = recv( connection_socket, buffer, MAX_BUFFER_SIZE, 0 ) ) > 0 )
@@ -169,6 +194,8 @@ int main()
 				ofile.open( filename.c_str(), ios::out | ios::binary );
 				if( ofile.fail() )
 				{
+					logfile << "Error opening file \'" << filename << "\'." << endl;
+					logfile.close();
 					exit( EXIT_FAILURE );
 				}
 				while( ( size = recv( connection_socket, buffer, MAX_BUFFER_SIZE, 0 ) ) > 0 )
